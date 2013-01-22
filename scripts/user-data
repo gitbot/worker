@@ -1,0 +1,12 @@
+#!/bin/bash
+apt-get -y install python-setuptools
+easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+# Install the Worker application
+cfn-init \
+     --stack { "Ref" : "AWS::StackName" } \
+     --resource LaunchConfig \
+     --configset ALL \
+     --access-key { "Ref" : "WorkerKeys" } \
+     --secret-key {"Fn::GetAtt": ["WorkerKeys", "SecretAccessKey"]} \
+     --region { "Ref" : "AWS::Region" }
+crontab /etc/cron.d/worker.cron

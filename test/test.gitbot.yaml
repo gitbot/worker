@@ -1,0 +1,8 @@
+publish:
+    bucket: gitbot_worker_stack_test
+    path: cfn/v1.0
+    main: stack.json
+    stack_name: gitbot-worker-stack-test
+    params:
+      KeyName: 'apartment-user'
+      MinInstances: '1'

@@ -1,0 +1,2 @@
+commando
+-e git://github.com/gitbot/gitbot.git#egg=gitbot

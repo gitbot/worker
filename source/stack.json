@@ -1,0 +1,286 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Gitbot worker cloud formation template.",
+
+  "Parameters" : {
+    "InstanceType" : {
+      "Description" : "Worker EC2 instance type",
+      "Type" : "String",
+      "Default" : "t1.micro",
+      "AllowedValues" : {{ instances|json|indent(4) }},
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "KeyName" : {
+      "Description" : "The EC2 Key Pair to allow SSH access to the instances",
+      "Type" : "String"
+    },
+
+    "MinInstances" : {
+      "Description" : "The minimum number of Workers",
+      "Type" : "Number",
+      "MinValue" : "0",
+      "Default"  : "0",
+      "ConstraintDescription" : "Enter a number >=0"
+    },
+
+    "MaxInstances" : {
+      "Description" : "The maximum number of Workers",
+      "Type" : "Number",
+      "MinValue" : "1",
+      "Default"  : "3",
+      "ConstraintDescription" : "Enter a number >1"
+    }
+  },
+
+  "Mappings" : {
+    "AWSInstanceType2Arch" : {{ instance2arch|json|indent(2) }},
+    "AWSRegionArch2AMI" : {{ arch2ami|json|indent(2) }}
+  },
+
+  "Resources" : {
+
+    "ManagerUser" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "manager",
+          "PolicyDocument": { "Statement":[{
+            "Effect": "Allow",
+            "Action": [
+              "sqs:SendMessage",
+              "sqs:DeleteMessage",
+              "s3:*"
+            ],
+            "Resource": "*"
+          }]}
+        }]
+      }
+    },
+
+    "WorkerUser" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "root",
+          "PolicyDocument": { "Statement":[{
+            "Effect": "Allow",
+            "Action": [
+              "cloudformation:DescribeStackResource",
+              "sqs:ReceiveMessage",
+              "sqs:DeleteMessage",
+              "s3:*"
+            ],
+            "Resource": "*"
+          }]}
+        }]
+      }
+    },
+
+    "WorkerKeys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref": "WorkerUser"}
+      }
+    },
+
+    "ManagerKeys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref": "ManagerUser"}
+      }
+    },
+
+    "InputQueue" : {
+      "Type" : "AWS::SQS::Queue"
+    },
+
+    "InputQueuePolicy" : {
+      "Type" : "AWS::SQS::QueuePolicy",
+      "DependsOn" : "LaunchConfig",
+      "Properties" : {
+        "Queues" : [ { "Ref" : "InputQueue" } ],
+        "PolicyDocument":  {
+          "Version": "2008-10-17",
+          "Id": "ReadFromQueuePolicy",
+          "Statement" : [ {
+            "Sid": "ConsumeMessages",
+            "Effect": "Allow",
+            "Principal" : { "AWS": {"Fn::GetAtt" : ["WorkerUser", "Arn"]} },
+            "Action": ["sqs:ReceiveMessage", "sqs:DeleteMessage"],
+            "Resource": { "Fn::GetAtt" : [ "InputQueue", "Arn" ] }
+          }, {
+            "Sid": "SendMessages",
+            "Effect": "Allow",
+            "Principal" : { "AWS": {"Fn::GetAtt" : ["ManagerUser", "Arn"]} },
+            "Action": ["sqs:SendMessage", "sqs:DeleteMessage"],
+            "Resource": { "Fn::GetAtt" : [ "InputQueue", "Arn" ] }
+          } ]
+        }
+      }
+    },
+
+    "InstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable SSH access",
+        "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0" } ]
+      }
+    },
+
+    "LaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata" : {
+        "Comment" : "Install the worker stack",
+        "AWS::CloudFormation::Init" : {
+          "configSets" : {
+            "ALL" : ["Repos", "System", "Worker"]
+          },
+          "Repos" : {
+            "packages" : {
+              "apt" : {
+                "python-software-properties" : []
+              }
+            },
+            "commands" : {
+              "1-nodejs" : {
+                "command" : "add-apt-repository -y ppa:chris-lea/node.js"
+              },
+              "2-update" : {
+                "command" : "apt-get update"
+              }
+            }
+          },
+          "System" : {
+            "packages" : {
+              "apt" : {
+                "build-essential" : [],
+                "git" : [],
+                "libyaml-dev" : [],
+                "nodejs" : [],
+                "npm" : [],
+                "nginx-light" : [],
+                "monit" : [],
+                "python-lxml" : [],
+                "python-virtualenv" : [],
+                "python-pip" : [],
+                "python-dev" : []
+              },
+              "python" : {
+                "boto" : "2.7.0",
+                "fswrap" : []
+              }
+            }
+          },
+          "Worker" : {
+            "files" : {
+              "/etc/cron.d/worker.cron" : {
+                "content" : {{ contents('worker.cron')|indent(14) }},
+                "mode"    : "000644",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/etc/worker.py" : {
+                "content" : {{ contents('worker.py')|indent(14) }},
+                "mode"    : "000755",
+                "owner"   : "root",
+                "group"   : "root"
+              }
+            }
+          }
+        }
+      },
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+                                          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" },
+                                          "Arch" ] } ] },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "UserData" : {
+          "Fn::Base64": {{ contents('user-data')|indent(30) }} }
+      }
+    },
+
+    "WorkerGroup" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : { "Fn::GetAZs" : ""},
+        "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
+        "MinSize" : { "Ref" : "MinInstances" },
+        "MaxSize" : { "Ref" : "MaxInstances" }
+      }
+    },
+
+    "WorkerScaleUpPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "WorkerGroup" },
+        "Cooldown" : "60",
+        "ScalingAdjustment" : "1"
+      }
+    },
+
+    "WorkerScaleDownPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "WorkerGroup" },
+        "Cooldown" : "60",
+        "ScalingAdjustment" : "-1"
+      }
+    },
+
+    "TooManyMessagesAlarm": {
+     "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Scale-Up if queue depth grows beyond 10 messages",
+        "Namespace": "AWS/SQS",
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Dimensions": [{ "Name": "QueueName", "Value" : { "Fn::GetAtt" : ["InputQueue", "QueueName"] } }],
+        "Statistic": "Sum",
+        "Period": "60",
+        "EvaluationPeriods": "5",
+        "Threshold": "1",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "AlarmActions": [ { "Ref": "WorkerScaleUpPolicy" } ]
+      }
+    },
+
+    "NotEnoughMessagesAlarm": {
+     "Type": "AWS::CloudWatch::Alarm",
+     "Properties": {
+        "AlarmDescription": "Scale-down if there are too many empty polls, indicating there is not enough work",
+        "Namespace": "AWS/SQS",
+        "MetricName": "NumberOfEmptyReceives",
+        "Dimensions": [{ "Name": "QueueName", "Value" : { "Fn::GetAtt" : ["InputQueue", "QueueName"] } }],
+        "Statistic": "Sum",
+        "Period": "60",
+        "EvaluationPeriods": "10",
+        "Threshold": "3",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "AlarmActions": [ { "Ref": "WorkerScaleDownPolicy" } ]
+      }
+    }
+  },
+
+  "Outputs" : {
+    "QueueURL" : {
+      "Description" : "URL of input queue",
+      "Value" : { "Ref" : "InputQueue" }
+    },
+    "ManagerKey" : {
+      "Description" : "The AWS IAM Key for the manager user",
+      "Value" : {"Ref" : "ManagerKeys"}
+    },
+    "ManagerSecret" : {
+      "Description" : "The AWS IAM Secret for the manager user",
+      "Value" : {"Fn::GetAtt" : ["ManagerKeys", "SecretAccessKey"]}
+    }
+  }
+}
