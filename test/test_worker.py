@@ -23,7 +23,7 @@ except:
 #
 # Wait for stack to be operational
 
-result = stack.get_outputs(config, wait=True)
+result = stack.get_outputs(config['publish']['stack_name'], wait=True)
 
 print '\n Stack operational. Sending message.\n'
 
