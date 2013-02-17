@@ -29,10 +29,12 @@ def xec(user_name, data, parent):
     activate = home.child_folder(venv).child('bin/activate_this.py')
     execfile(activate, dict(__file__=activate))
     setup_keys(user_name, data)
+    source_root = home.child_folder('src')
+    os.chdir(source_root.path)
     check_call(['git', 'clone', '--depth=1',
                     '--branch', data['branch'],
                     data['actions_repo'], 'actions'])
-    source = Folder('/home/' + user_name + '/actions')
+    source = source_root.child_folder('actions')
     os.chdir(source.path)
     if source.child_file('requirements.txt').exists:
         check_call(['pip', 'install', '-r', 'requirements.txt'])
@@ -41,7 +43,18 @@ def xec(user_name, data, parent):
     if source.child_file('install.sh').exists:
         check_call(['bash', 'install.sh'])
     execfile(activate, dict(__file__=activate))
-    actions = imp.load_source('actions', source.child('actions.py'))
+    init_file = File(source.child('__init__.py'))
+    if not init_file.exists:
+        init_file.write('')
+    sys.path.append(source_root.path)
+    try:
+        from actions import actions
+    except Exception:
+        parent.send(
+            dict(state='error', 
+            message='Cannot import the actions module'))
+        raise
+
     try:
         command = getattr(actions, data['command'])
     except AttributeError:
@@ -49,6 +62,7 @@ def xec(user_name, data, parent):
         parent.send(
             dict(state='error', 
             message='Command [%s] not found' % data['command']))
+        raise
     try:
         res = command(data)
         result = dict().update(res)
@@ -63,12 +77,14 @@ def xec(user_name, data, parent):
                 state='failure', 
                 message=w.message
             ))
+        raise
     except Exception, e:
         parent.send(
             dict(
                 state='error', 
                 message=e.message
             ))
+        raise
 
 
 def setup_keys(user_name, data):
@@ -138,7 +154,7 @@ def poll():
 
 
 def test(data_file):
-    data = yaml.load(data_file)
+    data = yaml.load(File(data_file).read_all())
     run(data)
 
 

@@ -157,6 +157,7 @@
           "System" : {
             "packages" : {
               "apt" : {
+                "unzip": [],
                 "build-essential" : [],
                 "git" : [],
                 "libyaml-dev" : [],
