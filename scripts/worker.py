@@ -66,7 +66,8 @@ def xec(user_name, data, parent):
         raise
     try:
         res = command(data)
-        result = dict().update(res)
+        result = dict()
+        result.update(res)
         parent.send(dict(
             state='complete',
             message=result.get('message', 'Success'),
@@ -110,12 +111,14 @@ def run(data):
         check_call(['/usr/sbin/deluser', '--quiet', '--remove-home', user_name])
 
 def post_status(status_url, status_data):
+    if not status_url:
+        return
     params = urllib.urlencode(status_data)
     headers = {
         "Content-type": "application/x-www-form-urlencoded",
         "Accept": "text/plain"
     }
-    split = urlparse(status_url)
+    split = urlsplit(status_url)
     server = urlunsplit(ParseResult(split.scheme, split.netloc, '', '', ''))
     conn = httplib.HTTPConnection(server)
     conn.request("POST", split.path, params, headers)
