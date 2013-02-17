@@ -25,11 +25,12 @@ def xec(user_name, data, parent):
     os.environ['BASH_ENV'] = home.child('.bashrc')
     os.chdir(home.path)
     venv = user_name.replace('gitbot-user-', 'gitbot-env-')
-    check_call(['/usr/bin/virtualenv', venv])
+    check_call(['/usr/bin/virtualenv', '--system-site-packages', venv])
     activate = home.child_folder(venv).child('bin/activate_this.py')
     execfile(activate, dict(__file__=activate))
     setup_keys(user_name, data)
     source_root = home.child_folder('src')
+    source_root.make()
     os.chdir(source_root.path)
     check_call(['git', 'clone', '--depth=1',
                     '--branch', data['branch'],
@@ -90,7 +91,7 @@ def xec(user_name, data, parent):
 def setup_keys(user_name, data):
      if 'github_oauth' in data:
         home = Folder('/home').child_folder(user_name)
-        check_call(['git', 'config', 'credential.helper', 'store'])
+        check_call(['git', 'config', '--global', 'credential.helper', 'store'])
         credential = 'https://{oauth}:x-oauth-basic@github.com'
         cred_file = home.child_file('.git-credentials')
         cred_file.write(credential.format(oauth=data['github_oauth']))
@@ -103,7 +104,7 @@ def run(data):
         p = Process(target=xec, args=(user_name, data, parent))
         p.start()
         status = child.recv()
-        post_status(status)
+        post_status(data.get('status_url', None), status)
         p.join()
     finally:
         check_call(['/usr/sbin/deluser', '--quiet', '--remove-home', user_name])
