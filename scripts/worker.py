@@ -70,21 +70,21 @@ def xec(user_name, data, parent):
         result.update(res)
         parent.send(dict(
             state='complete',
-            message=result.get('message', 'Success'),
+            message=result.get('message', 'Gitbot:: Build completed successfully.'),
             url=result.get('url', '')
         ))
     except UserWarning, w:
         parent.send(
             dict(
                 state='failure', 
-                message=w.message
+                message='Gitbot:: Build failed.[%s]' % w.message 
             ))
         raise
     except Exception, e:
         parent.send(
             dict(
                 state='error', 
-                message=e.message
+                message='Gitbot:: System error.[%s]' % e.message 
             ))
         raise
 
