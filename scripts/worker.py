@@ -72,46 +72,12 @@ def xec(user_name, data, parent):
 
 
 def setup_keys(user_name, data):
-    if not 'keys' in data or \
-        not 'archive' in data['keys'] or \
-        not data['keys']['archive']:
-        return
-
-    home = Folder('/home').child_folder(user_name)
-    access_key = data['keys']['access_key']
-    secret = data['keys']['secret']
-    conn = s3connect(REGION,
-                aws_access_key_id=access_key,
-                aws_secret_access_key=secret)
-    b = conn.get_bucket(data['keys']['bucket'])
-    key_file = home.child_folder('tmp').child(data['keys']['archive'] or 'keys.zip')
-    key_file = File(key_file)
-    target = key_file.parent.child_folder('keys')
-    k = b.get_key(key_file.name)
-    k.get_contents_to_file_name(key_file.path)
-    check_call(['unzip', '-jqqd', target.path, key_file.path])
-    keys_file = File(target.child('keys.yaml'))
-    if not keys_file:
-        return
-    keys_text = File(target.child('keys.yaml')).read_all()
-    keys = yaml.load(keys_text)
-    ssh = home.child_folder('.ssh')
-    ssh.make()
-    domains = False
-    if keys.domains:
-        domains = ' '.join(keys.domains)
-    if keys.conf:
-        conf = File(target.child(keys.conf)).copy_to(ssh)
-        check_call(['chmod', '000700', conf.path])
-    if keys.list:
-        for keydata in keys.list:
-            pub = File(target.child(keydata['public'])).copy_to(ssh)
-            pri = File(target.child(keydata['private'])).copy_to(ssh)
-            check_call(['chmod', '000644', pub.path])
-            check_call(['chmod', '000600', pri.path])
-    if domains:
-        check_call(['ssh-keyscan', domains, '>>', ssh.child('known_hosts')])
-
+     if 'github_oauth' in data:
+        home = Folder('/home').child_folder(user_name)
+        check_call(['git', 'config', 'credential.helper', 'store'])
+        credential = 'https://{oauth}:x-oauth-basic@github.com'
+        cred_file = home.child_file('.git-credentials')
+        cred_file.write(credential.format(oauth=data['github_oauth']))
 
 def run(data):
     user_name = 'gitbot-user-' + data['project'].replace('/', '-')
@@ -154,40 +120,31 @@ def poll():
     msg = q.read(600)
     if msg:
         data = json.loads(msg.get_body())
-        status_url = data.status_url
+        status_url = data.get('status_url', None)
         running.write('.')
         try:
             run(data)
             q.delete_message(msg)
         except Exception, e:
             # Handle error
-            post_status(status_url,  dict(
-                state='error',
-                message=e.message
-            ))
+            if status_url:
+                post_status(status_url,  dict(
+                    state='error',
+                    message=e.message
+                ))
             raise
         finally:
             running.delete()
 
 
-def test():
-    AWS_ACCESS_KEY = '{"Ref": "ManagerKeys"}'
-    AWS_SECRET_KEY = '{"Fn::GetAtt": ["ManagerKeys", "SecretAccessKey"]}'
-    data = dict(
-        project='gitbot/test',
-        actions_repo='git://github.com/gitbot/test.git',
-        repo='gitbot/www',
-        branch='master',
-        bucket='releases.dev.gitbot.test',
-        keys=dict(access_key=AWS_ACCESS_KEY, secret=AWS_SECRET_KEY),
-        command='all'
-    )
+def test(data_file):
+    data = yaml.load(data_file)
     run(data)
 
 
 def main():
     if len(sys.argv) > 1:
-        test()
+        test(sys.argv[1])
     else:
         poll()
 
