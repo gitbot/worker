@@ -1,5 +1,5 @@
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 SHELL=/bin/bash
 BASH_ENV=/root/.bashrc
-* * * * * /usr/bin/python /etc/worker.py &> /var/log/worker.log
+* * * * * /usr/bin/python /etc/worker.py &>> /var/log/worker.log
 
