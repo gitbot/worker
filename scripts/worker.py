@@ -139,6 +139,13 @@ def poll():
     q = Queue(conn, QUEUE_URL)
     msg = q.read(600)
     if msg:
+        log = File('/var/log/worker-detail.log')
+        msg = 
+        if log.exists:
+            msg = log.read_all()
+        msg += '\n'
+        msg += msg.get_body()
+        log.write(msg)
         data = json.loads(msg.get_body())
         status_url = data.get('status_url', None)
         running.write('.')
