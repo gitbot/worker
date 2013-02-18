@@ -107,13 +107,13 @@
           "Version": "2008-10-17",
           "Id": "ReadFromQueuePolicy",
           "Statement" : [ {
-            "Sid": "ConsumeMessages",
+            "Sid": "ConsumeMessages5fb3b5b6-eefc-41f5-9f07-74ff0a8fbc22",
             "Effect": "Allow",
             "Principal" : { "AWS": {"Fn::GetAtt" : ["WorkerUser", "Arn"]} },
             "Action": ["sqs:ReceiveMessage", "sqs:DeleteMessage"],
             "Resource": { "Fn::GetAtt" : [ "InputQueue", "Arn" ] }
           }, {
-            "Sid": "SendMessages",
+            "Sid": "SendMessages19c661b1-0262-4835-aeee-34d93b7c1128",
             "Effect": "Allow",
             "Principal" : { "AWS": {"Fn::GetAtt" : ["ManagerUser", "Arn"]} },
             "Action": ["sqs:SendMessage", "sqs:DeleteMessage"],
