@@ -20,8 +20,8 @@
     "MinInstances" : {
       "Description" : "The minimum number of Workers",
       "Type" : "Number",
-      "MinValue" : "0",
-      "Default"  : "0",
+      "MinValue" : "1",
+      "Default"  : "1",
       "ConstraintDescription" : "Enter a number >=0"
     },
 
