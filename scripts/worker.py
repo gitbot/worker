@@ -142,6 +142,8 @@ def poll():
         log = File('/var/log/worker-detail.log')
         if log.exists:
             log_txt = log.read_all()
+        else:
+            log_txt = ''
         log_txt += '\n'
         log_txt += body
         log.write(log_txt)
