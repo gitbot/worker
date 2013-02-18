@@ -100,12 +100,11 @@
 
     "InputQueuePolicy" : {
       "Type" : "AWS::SQS::QueuePolicy",
-      "DependsOn" : "LaunchConfig",
       "Properties" : {
         "Queues" : [ { "Ref" : "InputQueue" } ],
         "PolicyDocument":  {
           "Version": "2008-10-17",
-          "Id": "ReadFromQueuePolicy",
+          "Id": "ReadFromQueuePolicy9a1b28cf-2725-4d0f-a016-142ac2035919",
           "Statement" : [ {
             "Sid": "ConsumeMessages5fb3b5b6-eefc-41f5-9f07-74ff0a8fbc22",
             "Effect": "Allow",
