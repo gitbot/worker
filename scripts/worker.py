@@ -3,7 +3,6 @@ from boto.sqs import connect_to_region as sqsconnect
 from boto.sqs.queue import Queue
 from fswrap import File, Folder
 import httplib
-import imp
 import json
 from multiprocessing import Process, Pipe
 import os
@@ -139,14 +138,14 @@ def poll():
     q = Queue(conn, QUEUE_URL)
     msg = q.read(600)
     if msg:
+        body = msg.get_body()
         log = File('/var/log/worker-detail.log')
-        msg = 
         if log.exists:
-            msg = log.read_all()
-        msg += '\n'
-        msg += msg.get_body()
-        log.write(msg)
-        data = json.loads(msg.get_body())
+            log_txt = log.read_all()
+        log_txt += '\n'
+        log_txt += body
+        log.write(log_txt)
+        data = json.loads(body)
         status_url = data.get('status_url', None)
         running.write('.')
         try:
