@@ -125,7 +125,7 @@ def post_status(status_url, status_data):
         "Accept": "text/plain"
     }
     split = urlsplit(status_url)
-    server = urlunsplit(split.scheme, split.netloc, '',  '', '')
+    server = urlunsplit((split.scheme, split.netloc, '',  '', ''))
     conn = httplib.HTTPConnection(server)
     conn.request("POST", split.path, params, headers)
     response = conn.getresponse()
