@@ -146,14 +146,6 @@ def poll():
     msg = q.read(600)
     if msg:
         body = msg.get_body()
-        log = File('/var/log/worker-detail.log')
-        if log.exists:
-            log_txt = log.read_all()
-        else:
-            log_txt = ''
-        log_txt += '\n'
-        log_txt += body
-        log.write(log_txt)
         data = json.loads(body)
         status_url = data.get('status_url', None)
         running.write('.')
