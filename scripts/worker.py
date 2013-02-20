@@ -123,7 +123,9 @@ def post_status(status_url, status_data):
         "Content-type": "application/json",
         "Accept": "text/plain"
     }
-    response = requests.post(status_url, data=status_data, headers=headers)
+    response = requests.post(status_url, 
+                    data=json.dumps(status_data), 
+                    headers=headers)
     if not response.status_code == 200:
         print response.text
         print status_url
