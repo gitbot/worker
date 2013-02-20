@@ -10,7 +10,7 @@ import pwd
 from subprocess import check_call
 import sys
 import urllib
-from urlparse import urlsplit, urlunsplit, ParseResult
+from urlparse import urlsplit, urlunsplit
 import yaml
 
 QUEUE_URL = '{ "Ref" : "InputQueue" }'
@@ -125,7 +125,7 @@ def post_status(status_url, status_data):
         "Accept": "text/plain"
     }
     split = urlsplit(status_url)
-    server = urlunsplit(ParseResult(split.scheme, split.netloc, '',  '', '', ''))
+    server = urlunsplit(split.scheme, split.netloc, '',  '', '')
     conn = httplib.HTTPConnection(server)
     conn.request("POST", split.path, params, headers)
     response = conn.getresponse()
