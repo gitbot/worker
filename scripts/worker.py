@@ -14,6 +14,8 @@ import yaml
 QUEUE_URL = '{ "Ref" : "InputQueue" }'
 REGION = '{ "Ref" : "AWS::Region" }'
 
+
+
 def xec(user_name, data, parent):
     uid = pwd.getpwnam(user_name)[2]
     os.setuid(uid)
@@ -55,7 +57,7 @@ def xec(user_name, data, parent):
         parent.send(
             dict(state='error', 
             message='Cannot import the actions module'))
-        raise
+        return
     if 'command' in data:
         command_name = data['command']
     else:
@@ -67,7 +69,7 @@ def xec(user_name, data, parent):
         parent.send(
             dict(state='error', 
             message='Command [%s] not found' % data['command']))
-        raise
+        return
     try:
         res = command(data)
     except Exception, e:
@@ -77,7 +79,7 @@ def xec(user_name, data, parent):
                 state='failure', 
                 message='Gitbot:: Build failed.[%s]' % e.message 
             ))
-        raise            
+        return           
     try:        
         result = dict()
         result.update(res)
@@ -92,7 +94,7 @@ def xec(user_name, data, parent):
                 state='error', 
                 message='Gitbot:: System error.[%s]' % e.message 
             ))
-        raise
+        return
 
 
 def setup_keys(user_name, data):
@@ -106,6 +108,7 @@ def setup_keys(user_name, data):
 def run(data):
     user_name = 'gitbot-user-' + data['project'].replace('/', '-')
     check_call(['/usr/sbin/adduser', '--disabled-password', '--gecos', '""', user_name])
+    status = None
     try:
         child, parent = Pipe()
         p = Process(target=xec, args=(user_name, data, parent))
@@ -115,6 +118,8 @@ def run(data):
         p.join()
     finally:
         check_call(['/usr/sbin/deluser', '--quiet', '--remove-home', user_name])
+    
+    return status
 
 def post_status(status_url, status_data):
     if not status_url:
@@ -127,11 +132,7 @@ def post_status(status_url, status_data):
                     data=json.dumps(status_data), 
                     headers=headers)
     if not response.status_code == 200:
-        print response.text
-        print status_url
-        print status_data
-        print headers
-        raise Exception("Cannot post status")
+        raise Exception("Posting status failed")
 
 def poll():
     running = File('/var/run/build')
