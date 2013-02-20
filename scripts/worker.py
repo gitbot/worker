@@ -125,6 +125,10 @@ def post_status(status_url, status_data):
     }
     response = requests.post(status_url, data=status_data, headers=headers)
     if not response.status_code == 200:
+        print response.text
+        print status_url
+        print status_data
+        print headers
         raise Exception("Cannot post status")
 
 def poll():
