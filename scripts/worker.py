@@ -72,6 +72,15 @@ def xec(user_name, data, parent):
         raise
     try:
         res = command(data)
+    except Exception, e:
+        res = None
+        parent.send(
+            dict(
+                state='failure', 
+                message='Gitbot:: Build failed.[%s]' % e.message 
+            ))
+        raise            
+    try:        
         result = dict()
         result.update(res)
         parent.send(dict(
@@ -79,13 +88,6 @@ def xec(user_name, data, parent):
             message=result.get('message', 'Gitbot:: Build completed successfully.'),
             url=result.get('url', '')
         ))
-    except UserWarning, w:
-        parent.send(
-            dict(
-                state='failure', 
-                message='Gitbot:: Build failed.[%s]' % w.message 
-            ))
-        raise
     except Exception, e:
         parent.send(
             dict(
@@ -126,7 +128,7 @@ def post_status(status_url, status_data):
     }
     split = urlsplit(status_url)
     server = urlunsplit((split.scheme, split.netloc, '',  '', ''))
-    conn = httplib.HTTPConnection(server)
+    conn = httplib.HTTPConnection(server, split.port or 80)
     conn.request("POST", split.path, params, headers)
     response = conn.getresponse()
     if not response.status == 200:
