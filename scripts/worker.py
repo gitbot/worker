@@ -2,15 +2,13 @@ from boto.s3 import connect_to_region as s3connect
 from boto.sqs import connect_to_region as sqsconnect
 from boto.sqs.queue import Queue
 from fswrap import File, Folder
-import httplib
 import json
 from multiprocessing import Process, Pipe
 import os
 import pwd
+import requests
 from subprocess import check_call
 import sys
-import urllib
-from urlparse import urlsplit, urlunsplit
 import yaml
 
 QUEUE_URL = '{ "Ref" : "InputQueue" }'
@@ -121,19 +119,13 @@ def run(data):
 def post_status(status_url, status_data):
     if not status_url:
         return
-    params = urllib.urlencode(status_data)
     headers = {
         "Content-type": "application/x-www-form-urlencoded",
         "Accept": "text/plain"
     }
-    split = urlsplit(status_url)
-    server = urlunsplit((split.scheme, split.netloc, '',  '', ''))
-    conn = httplib.HTTPConnection(server, split.port or 80)
-    conn.request("POST", split.path, params, headers)
-    response = conn.getresponse()
+    response = requests.post(status_url, data=status_data, headers=headers)
     if not response.status == 200:
         raise Exception("Cannot post status")
-
 
 def poll():
     running = File('/var/run/build')
