@@ -58,9 +58,12 @@ def xec(user_name, data, parent):
             dict(state='error', 
             message='Cannot import the actions module'))
         raise
-
+    if 'command' in data:
+        command_name = data['command']
+    else:
+        command_name = data['action']['command']
     try:
-        command = getattr(actions, data['command'])
+        command = getattr(actions, command_name)
     except AttributeError:
         command = None
         parent.send(
