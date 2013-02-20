@@ -124,7 +124,7 @@ def post_status(status_url, status_data):
         "Accept": "text/plain"
     }
     response = requests.post(status_url, data=status_data, headers=headers)
-    if not response.status == 200:
+    if not response.status_code == 200:
         raise Exception("Cannot post status")
 
 def poll():
