@@ -31,9 +31,13 @@ def xec(user_name, data, parent):
     source_root = home.child_folder('src')
     source_root.make()
     os.chdir(source_root.path)
+    if 'actions_repo' in data:
+        actions_repo = data['actions_repo']
+    else:
+        actions_repo = 'https://github.com/' + data['project'] + '.git'
     check_call(['git', 'clone', '--depth=1',
                     '--branch', data['branch'],
-                    data['actions_repo'], 'actions'])
+                    actions_repo, 'actions'])
     source = source_root.child_folder('actions')
     os.chdir(source.path)
     if source.child_file('requirements.txt').exists:
