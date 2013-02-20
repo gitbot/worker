@@ -132,7 +132,9 @@ def post_status(status_url, status_data):
                     data=json.dumps(status_data), 
                     headers=headers)
     if not response.status_code == 200:
+        print response.text
         raise Exception("Posting status failed")
+
 
 def poll():
     running = File('/var/run/build')
@@ -163,6 +165,7 @@ def poll():
             raise
         finally:
             running.delete()
+            print 'All done.'
 
 
 def test(data_file):
