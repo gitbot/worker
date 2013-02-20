@@ -120,7 +120,7 @@ def post_status(status_url, status_data):
     if not status_url:
         return
     headers = {
-        "Content-type": "application/x-www-form-urlencoded",
+        "Content-type": "application/json",
         "Accept": "text/plain"
     }
     response = requests.post(status_url, data=status_data, headers=headers)
