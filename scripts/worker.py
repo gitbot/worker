@@ -14,8 +14,6 @@ import yaml
 QUEUE_URL = '{ "Ref" : "InputQueue" }'
 REGION = '{ "Ref" : "AWS::Region" }'
 
-
-
 def xec(user_name, data, parent):
     uid = pwd.getpwnam(user_name)[2]
     os.setuid(uid)
@@ -131,6 +129,9 @@ def post_status(status_url, status_data):
     response = requests.post(status_url, 
                     data=json.dumps(status_data), 
                     headers=headers)
+    print 'Posting to: ' + status_url
+    print '...posting: ' + data
+    print '...with headers: ' + headers
     if not response.status_code == 200:
         print response.text
         raise Exception("Posting status failed")
@@ -150,6 +151,7 @@ def poll():
     if msg:
         body = msg.get_body()
         data = json.loads(body)
+        print data
         status_url = data.get('status_url', None)
         running.write('.')
         try:
@@ -163,7 +165,7 @@ def poll():
                     message=e.message
                 ))
             raise
-        finally:
+        else:
             running.delete()
             print 'All done.'
 
