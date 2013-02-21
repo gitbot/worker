@@ -130,7 +130,7 @@ def post_status(status_url, status_data):
                     data=json.dumps(status_data), 
                     headers=headers)
     print 'Posting to: ' + status_url
-    print '...posting: ' + data
+    print '...posting: ' + status_data
     print '...with headers: ' + headers
     if not response.status_code == 200:
         print response.text
