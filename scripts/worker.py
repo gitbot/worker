@@ -149,7 +149,6 @@ def poll():
     if msg:
         body = msg.get_body()
         data = json.loads(body)
-        print data
         status_url = data.get('status_url', None)
         running.write('.')
         try:
@@ -165,9 +164,8 @@ def poll():
                     message=e.message
                 ))
             raise
-        else:
-            running.delete()
-            print 'All done.'
+        running.delete()
+        print 'All done.'
 
 
 def test(data_file):
