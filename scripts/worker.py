@@ -21,7 +21,7 @@ def xec(user_name, data, parent):
     os.setuid(uid)
     home = Folder('/home').child_folder(user_name)
     os.environ['HOME'] = home.path
-    os.environ['BASH_ENV'] = home.child('.bashrc')
+    os.environ['BASH_ENV'] = home.child('.profile')
     os.chdir(home.path)
     venv = user_name.replace('gitbot-user-', 'gitbot-env-')
     check_call(['/usr/bin/virtualenv', '--system-site-packages', venv])
