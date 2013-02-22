@@ -35,9 +35,7 @@ def xec(user_name, data, parent):
         actions_repo = data['actions_repo']
     else:
         actions_repo = 'https://github.com/' + data['project'] + '.git'
-    check_call(['git', 'clone', '--depth=1',
-                    '--branch', data['branch'],
-                    actions_repo, 'actions'])
+    check_call(['git', 'clone', '--depth=1', actions_repo, 'actions'])
     source = source_root.child_folder('actions')
     os.chdir(source.path)
     if source.child_file('requirements.txt').exists:
