@@ -156,7 +156,7 @@
           "System" : {
             "packages" : {
               "apt" : {
-                "sun-java6-jdk": [],
+                "default-jre-headless": [],
                 "unzip": [],
                 "build-essential" : [],
                 "git" : [],
