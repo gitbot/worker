@@ -53,7 +53,7 @@ def xec(user_name, data, parent):
         from actions import actions
     except Exception:
         parent.send(
-            dict(state='error', 
+            dict(state='error',
             message='Cannot import the actions module'))
         return
     if 'command' in data:
@@ -65,7 +65,7 @@ def xec(user_name, data, parent):
     except AttributeError:
         command = None
         parent.send(
-            dict(state='error', 
+            dict(state='error',
             message='Command [%s] not found' % data['command']))
         return
     try:
@@ -74,23 +74,23 @@ def xec(user_name, data, parent):
         res = None
         parent.send(
             dict(
-                state='failure', 
-                message='Gitbot:: Build failed.[%s]' % e.message 
+                state='failed',
+                message=e.message
             ))
-        return           
-    try:        
+        return
+    try:
         result = dict()
         result.update(res)
         parent.send(dict(
-            state='complete',
-            message=result.get('message', 'Gitbot:: Build completed successfully.'),
+            state='completed',
+            message=result.get('message', ''),
             url=result.get('url', '')
         ))
     except Exception, e:
         parent.send(
             dict(
-                state='error', 
-                message='Gitbot:: System error.[%s]' % e.message 
+                state='error',
+                message=e.message
             ))
         return
 
@@ -107,16 +107,18 @@ def run(data):
     user_name = 'gitbot-user-' + data['project'].replace('/', '-')
     check_call(['/usr/sbin/adduser', '--disabled-password', '--gecos', '""', user_name])
     status = None
+    status_url = data.get('status_url', None)
+    post_status(status_url, dict(status='started'))
     try:
         child, parent = Pipe()
         p = Process(target=xec, args=(user_name, data, parent))
         p.start()
         status = child.recv()
-        post_status(data.get('status_url', None), status)
+        post_status(status_url, status)
         p.join()
     finally:
         check_call(['/usr/sbin/deluser', '--quiet', '--remove-home', user_name])
-    
+
     return status
 
 def post_status(status_url, status_data):
@@ -126,11 +128,13 @@ def post_status(status_url, status_data):
         "Content-type": "application/json",
         "Accept": "text/plain"
     }
-    response = requests.post(status_url, 
-                    data=json.dumps(status_data), 
+    response = requests.post(status_url,
+                    data=json.dumps(status_data),
                     headers=headers)
     if not response.status_code == 200:
-        raise HandledException("Posting status failed")
+        print 'Error: Posting status failed'
+        print  response.text
+
 
 
 def poll():
