@@ -82,7 +82,7 @@ def xec(user_name, data, parent):
         result = dict()
         result.update(res)
         parent.send(dict(
-            state='completed',
+            state=result.get('state', 'completed'),
             message=result.get('message', ''),
             url=result.get('url', '')
         ))
@@ -108,13 +108,15 @@ def run(data):
     check_call(['/usr/sbin/adduser', '--disabled-password', '--gecos', '""', user_name])
     status = None
     status_url = data.get('status_url', None)
-    post_status(status_url, dict(status='started'))
+    post_status(status_url, dict(state='started'))
     try:
         child, parent = Pipe()
         p = Process(target=xec, args=(user_name, data, parent))
         p.start()
         status = child.recv()
-        post_status(status_url, status)
+        result = dict(status='completed')
+        result.update(status)
+        post_status(status_url, result)
         p.join()
     finally:
         check_call(['/usr/sbin/deluser', '--quiet', '--remove-home', user_name])
