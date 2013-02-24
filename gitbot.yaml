@@ -3,62 +3,71 @@ source_dir: source
 search_paths: scripts
 source_patterns: '*.json'
 publish:
-    bucket: gitbot_worker
-    path: cfn/v1.0
-    main: stack.json
-    stack_name: gitbot-worker
-    params:
-      KeyName: 'apartment-user'
+  bucket: gitbot_worker
+  path: cfn/v1.0
+  main: stack.json
+  stack_name: gitbot-worker
+  params:
+    KeyName: 'apartment-user'
 
 context:
-    instances:
-        - t1.micro
-        - m1.small
-        - m1.medium
-        - m1.large
-        - m1.xlarge
-        - m2.xlarge
-        - m2.2xlarge
-        - m2.4xlarge
-        - c1.medium
-        - c1.xlarge
-        - cc1.4xlarge
-        - cc2.8xlarge
-        - cg1.4xlarge
-    instance2arch:
-        c1.medium:
-          Arch: 64
-        c1.xlarge:
-          Arch: 64
-        m1.large:
-          Arch: 64
-        m1.medium:
-          Arch: 64
-        m1.small:
-          Arch: 64
-        m1.xlarge:
-          Arch: 64
-        m2.2xlarge:
-          Arch: 64
-        m2.4xlarge:
-          Arch: 64
-        m2.xlarge:
-          Arch: 64
-        t1.micro:
-          Arch: 64
-    arch2ami:
-        ap-northeast-1:
-          '32': 'ami-55b03454'
-          '64': 'ami-57b03456'
-        ap-southeast-1:
-          '32': 'ami-782c612a'
-          '64': 'ami-7e2c612c'
-        eu-west-1:
-          '32': 'ami-26414852'
-          '64': 'ami-20414854'
-        us-east-1:
-          '32': 'ami-0f45d266'
-          '64': 'ami-0145d268'
-        us-west-1:
-          '32': 'ami-3cd8fb79'
-          '64': 'ami-3ed8fb7b'
+  instances:
+    - t1.micro
+    - m1.small
+    - m1.medium
+    - m1.large
+    - m1.xlarge
+    - m2.xlarge
+    - m2.2xlarge
+    - m2.4xlarge
+    - c1.medium
+    - c1.xlarge
+    - cc1.4xlarge
+    - cc2.8xlarge
+    - cg1.4xlarge
+  instance2arch:
+    c1.medium:
+      Arch: 64
+    c1.xlarge:
+      Arch: 64
+    m1.large:
+      Arch: 64
+    m1.medium:
+      Arch: 64
+    m1.small:
+      Arch: 64
+    m1.xlarge:
+      Arch: 64
+    m2.2xlarge:
+      Arch: 64
+    m2.4xlarge:
+      Arch: 64
+    m2.xlarge:
+      Arch: 64
+    t1.micro:
+      Arch: 64
+  arch2ami:
+    ap-northeast-1:
+      '32': aki-42992843
+      '64': aki-44992845
+    ap-southeast-1:
+      '32': aki-f81354aa
+      '64': aki-fe1354ac
+    ap-southeast-2:
+      '32': aki-33990e09
+      '64': aki-31990e0b
+    eu-west-1:
+      '32': aki-75665e01
+      '64': aki-71665e05
+    sa-east-1:
+      '32': aki-ca8f51d7
+      '64': aki-c48f51d9
+    us-east-1:
+      '32': aki-b6aa75df
+      '64': aki-88aa75e1
+    us-west-1:
+      '32': aki-f57e26b0
+      '64': aki-f77e26b2
+    us-west-2:
+      '32': aki-fa37baca
+      '64': aki-fc37bacc
