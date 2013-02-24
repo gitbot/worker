@@ -1,4 +1,3 @@
-from boto.s3 import connect_to_region as s3connect
 from boto.sqs import connect_to_region as sqsconnect
 from boto.sqs.queue import Queue
 from fswrap import File, Folder
@@ -14,11 +13,11 @@ import yaml
 QUEUE_URL = '{ "Ref" : "InputQueue" }'
 REGION = '{ "Ref" : "AWS::Region" }'
 
-class HandledException(Exception): pass
+class HandledException(Exception):
+    pass
 
-def xec(user_name, data, parent):
-    uid = pwd.getpwnam(user_name)[2]
-    os.setuid(uid)
+def setup_env(user_name, data):
+    os.setuid(pwd.getpwnam(user_name)[2])
     home = Folder('/home').child_folder(user_name)
     os.environ['HOME'] = home.path
     os.environ['BASH_ENV'] = home.child('.profile')
@@ -27,7 +26,15 @@ def xec(user_name, data, parent):
     check_call(['/usr/bin/virtualenv', '--system-site-packages', venv])
     activate = home.child_folder(venv).child('bin/activate_this.py')
     execfile(activate, dict(__file__=activate))
-    setup_keys(user_name, data)
+    if 'github_oauth' in data:
+        check_call(['git', 'config', '--global', 'credential.helper', 'store'])
+        credential = 'https://{oauth}:x-oauth-basic@github.com'
+        cred_file = home.child_file('.git-credentials')
+        cred_file.write(credential.format(oauth=data['github_oauth']))
+    return home, activate
+
+def xec(user_name, data, parent):
+    home, activate = setup_env(user_name, data)
     source_root = home.child_folder('src')
     source_root.make()
     os.chdir(source_root.path)
@@ -49,74 +56,79 @@ def xec(user_name, data, parent):
     if not init_file.exists:
         init_file.write('')
     sys.path.append(source_root.path)
+
+    def finish(status):
+        parent.send(status)
+        parent.close()
+        return
+
     try:
         from actions import actions
     except Exception:
-        parent.send(
+        return finish(
             dict(state='error',
             message='Cannot import the actions module'))
-        return
+
     if 'command' in data:
         command_name = data['command']
     else:
         command_name = data['action']['command']
+
     try:
         command = getattr(actions, command_name)
     except AttributeError:
         command = None
-        parent.send(
+        return finish(
             dict(state='error',
             message='Command [%s] not found' % data['command']))
-        return
+
+
+    parent.send(dict(state='running'))
+
     try:
         res = command(data)
     except Exception, e:
-        res = None
-        parent.send(
-            dict(
-                state='failed',
-                message=e.message
-            ))
-        return
-    try:
-        result = dict()
-        result.update(res)
-        parent.send(dict(
-            state=result.get('state', 'completed'),
-            message=result.get('message', ''),
-            url=result.get('url', '')
-        ))
-    except Exception, e:
-        parent.send(
-            dict(
-                state='error',
-                message=e.message
-            ))
-        return
+        return finish(dict(state='failed', message=e.message ))
 
+    result = dict()
+    result.update(res)
 
-def setup_keys(user_name, data):
-     if 'github_oauth' in data:
-        home = Folder('/home').child_folder(user_name)
-        check_call(['git', 'config', '--global', 'credential.helper', 'store'])
-        credential = 'https://{oauth}:x-oauth-basic@github.com'
-        cred_file = home.child_file('.git-credentials')
-        cred_file.write(credential.format(oauth=data['github_oauth']))
+    finish(dict(state=result.get('state', 'completed'),
+                message=result.get('message', ''),
+                url=result.get('url', '')))
+
 
 def run(data):
     user_name = 'gitbot-user-' + data['project'].replace('/', '-')
-    check_call(['/usr/sbin/adduser', '--disabled-password', '--gecos', '""', user_name])
+    check_call(['/usr/sbin/adduser',
+                    '--disabled-password',
+                    '--gecos', '""', user_name])
+
     status = None
     status_url = data.get('status_url', None)
     post_status(status_url, dict(state='started'))
     try:
-        child, parent = Pipe()
-        p = Process(target=xec, args=(user_name, data, parent))
+        receiver, sender = Pipe(False)
+        p = Process(target=xec, args=(user_name, data, sender))
         p.start()
-        status = child.recv()
-        result = dict(status='completed')
-        result.update(status)
-        post_status(status_url, result)
+        while True:
+            try:
+                status = receiver.recv()
+            except EOFError:
+                receiver.close()
+                break
+            else:
+                try:
+                    result = dict(state='running')
+                    result.update(status)
+                    post_status(status_url, result)
+                    if result['state'] == 'completed' or \
+                        result['state'] == 'error' or \
+                        result['state'] == 'failed':
+                        receiver.close()
+                        break
+                except:
+                    pass
         p.join()
     finally:
         check_call(['/usr/sbin/deluser', '--quiet', '--remove-home', user_name])
