@@ -24,7 +24,7 @@ def setup_env(user_name, data):
 
     def activate():
         f = home.child_folder(venv).child('bin/activate_this.py')
-        execfile(activate, dict(__file__=f))
+        execfile(f, dict(__file__=f))
 
     activate()
 
