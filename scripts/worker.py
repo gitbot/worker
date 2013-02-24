@@ -10,9 +10,6 @@ from subprocess import check_call
 import sys
 import yaml
 
-QUEUE_URL = '{ "Ref" : "InputQueue" }'
-REGION = '{ "Ref" : "AWS::Region" }'
-
 class HandledException(Exception):
     pass
 
@@ -24,8 +21,13 @@ def setup_env(user_name, data):
     os.chdir(home.path)
     venv = user_name.replace('gitbot-user-', 'gitbot-env-')
     check_call(['/usr/bin/virtualenv', '--system-site-packages', venv])
-    activate = home.child_folder(venv).child('bin/activate_this.py')
-    execfile(activate, dict(__file__=activate))
+
+    def activate():
+        f = home.child_folder(venv).child('bin/activate_this.py')
+        execfile(activate, dict(__file__=f))
+
+    activate()
+
     if 'github_oauth' in data:
         check_call(['git', 'config', '--global', 'credential.helper', 'store'])
         credential = 'https://{oauth}:x-oauth-basic@github.com'
@@ -33,29 +35,42 @@ def setup_env(user_name, data):
         cred_file.write(credential.format(oauth=data['github_oauth']))
     return home, activate
 
-def xec(user_name, data, parent):
-    home, activate = setup_env(user_name, data)
+
+def load_actions(home, data):
+
     source_root = home.child_folder('src')
     source_root.make()
     os.chdir(source_root.path)
+
     if 'actions_repo' in data:
         actions_repo = data['actions_repo']
     else:
         actions_repo = 'https://github.com/' + data['project'] + '.git'
+
     check_call(['git', 'clone', '--depth=1', actions_repo, 'actions'])
     source = source_root.child_folder('actions')
     os.chdir(source.path)
+
+    init_file = File(source.child('__init__.py'))
+    if not init_file.exists:
+        init_file.write('')
+
     if source.child_file('requirements.txt').exists:
         check_call(['pip', 'install', '-r', 'requirements.txt'])
     if source.child_file('package.json').exists:
         check_call(['npm', 'install'])
     if source.child_file('install.sh').exists:
         check_call(['bash', 'install.sh'])
-    execfile(activate, dict(__file__=activate))
-    init_file = File(source.child('__init__.py'))
-    if not init_file.exists:
-        init_file.write('')
+
     sys.path.append(source_root.path)
+
+
+def xec(user_name, data, parent):
+
+    home, activate = setup_env(user_name, data)
+
+    load_actions(home, data)
+    activate()
 
     def finish(status):
         parent.send(status)
@@ -155,12 +170,14 @@ def poll():
     running = File('/var/run/build')
     if running.exists:
         return
-    AWS_ACCESS_KEY = '{"Ref": "WorkerKeys"}'
-    AWS_SECRET_KEY = '{"Fn::GetAtt": ["WorkerKeys", "SecretAccessKey"]}'
-    conn = sqsconnect(REGION,
-                aws_access_key_id=AWS_ACCESS_KEY,
-                aws_secret_access_key=AWS_SECRET_KEY)
-    q = Queue(conn, QUEUE_URL)
+    queue_url = '{ "Ref" : "InputQueue" }'
+    region = '{ "Ref" : "AWS::Region" }'
+    aws_access_key = '{"Ref": "WorkerKeys"}'
+    aws_secret_key = '{"Fn::GetAtt": ["WorkerKeys", "SecretAccessKey"]}'
+    conn = sqsconnect(region,
+                aws_access_key_id=aws_access_key,
+                aws_secret_access_key=aws_secret_key)
+    q = Queue(conn, queue_url)
     msg = q.read(600)
     if msg:
         body = msg.get_body()
@@ -173,7 +190,6 @@ def poll():
         except HandledException:
             raise
         except Exception, e:
-            # Handle error
             if status_url:
                 post_status(status_url,  dict(
                     state='error',
