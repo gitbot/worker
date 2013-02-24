@@ -69,13 +69,19 @@ def xec(user_name, data, parent):
 
     home, activate = setup_env(user_name, data)
 
-    load_actions(home, data)
-    activate()
 
     def finish(status):
         parent.send(status)
         parent.close()
         return
+
+    try:
+        load_actions(home, data)
+        activate()
+    except:
+        return finish(
+            dict(state='error',
+            message='Cannot clone the actions module'))
 
     try:
         from actions import actions
