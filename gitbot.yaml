@@ -3,10 +3,10 @@ source_dir: source
 search_paths: scripts
 source_patterns: '*.json'
 publish:
-  bucket: gitbot-build-worker.gitbot.io
+  bucket: gitbot-io-worker
   path: cfn/v1.0
   main: stack.json
-  stack_name: gitbot-build-worker
+  stack_name: gitbot-io-worker
   params:
     KeyName: gitbot-user
 
