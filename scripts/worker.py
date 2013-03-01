@@ -109,7 +109,10 @@ def xec(user_name, data, parent):
     try:
         res = command(data)
     except Exception, e:
-        return finish(dict(state='failed', message=e.message ))
+        state = 'failed'
+        if len(e.args) > 1 and e.args[1] in ['failed', 'error', 'conflicted']:
+            state = e.args[1]
+        return finish(dict(state=state, message=e.message ))
 
     result = dict()
     result.update(res)

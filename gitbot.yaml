@@ -8,7 +8,7 @@ publish:
   main: stack.json
   stack_name: gitbot-worker
   params:
-    KeyName: 'apartment-user'
+    KeyName: 'gitbot-user'
 
 context:
   instances:
