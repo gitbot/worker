@@ -154,6 +154,7 @@ def run(data):
                     post_status(status_url, result)
                     if result['state'] == 'completed' or \
                         result['state'] == 'error' or \
+                        result['state'] == 'conflicted' or \
                         result['state'] == 'failed':
                         receiver.close()
                         break
@@ -211,8 +212,11 @@ def poll():
                     message=e.message
                 ))
             raise
-        running.delete()
-        print 'All done.'
+        else:
+            print 'All done.'
+        finally:
+            running.delete()
+
 
 
 def test(data_file):
