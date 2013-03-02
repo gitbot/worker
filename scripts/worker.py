@@ -115,7 +115,10 @@ def xec(user_name, data, parent):
         return finish(dict(state=state, message=e.message ))
 
     result = dict()
-    result.update(res)
+    if isinstance(res, dict):
+        result.update(res)
+    else:
+        result['message'] = res
 
     finish(dict(state=result.get('state', 'completed'),
                 message=result.get('message', ''),
@@ -144,7 +147,10 @@ def run(data):
             else:
                 try:
                     result = dict(state='running')
-                    result.update(status)
+                    if isinstance(status, dict):
+                        result.update(status)
+                    else:
+                        result['message'] = status
                     post_status(status_url, result)
                     if result['state'] == 'completed' or \
                         result['state'] == 'error' or \
