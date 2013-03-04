@@ -51,10 +51,6 @@ def load_actions(home, data):
     source = source_root.child_folder('actions')
     os.chdir(source.path)
 
-    init_file = File(source.child('__init__.py'))
-    if not init_file.exists:
-        init_file.write('')
-
     if source.child_file('requirements.txt').exists:
         check_call(['pip', 'install', '-r', 'requirements.txt'])
     if source.child_file('package.json').exists:
@@ -71,6 +67,8 @@ def xec(user_name, data, parent):
 
 
     def finish(status):
+        print 'Finishing up...'
+        print unicode(status)
         parent.send(status)
         parent.close()
         return
@@ -84,7 +82,7 @@ def xec(user_name, data, parent):
             message='Cannot clone the actions module'))
 
     try:
-        from actions import actions
+        import actions
     except Exception:
         return finish(
             dict(state='error',
