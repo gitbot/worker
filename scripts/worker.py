@@ -58,7 +58,7 @@ def load_actions(home, data):
     if source.child_file('install.sh').exists:
         check_call(['bash', 'install.sh'])
 
-    sys.path.append(source_root.path)
+    sys.path.append(source.path)
 
 
 def xec(user_name, data, parent):
