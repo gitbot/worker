@@ -10,8 +10,10 @@ from subprocess import check_call
 import sys
 import yaml
 
+
 class HandledException(Exception):
     pass
+
 
 def setup_env(user_name, data):
     os.setuid(pwd.getpwnam(user_name)[2])
@@ -65,7 +67,6 @@ def xec(user_name, data, parent):
 
     home, activate = setup_env(user_name, data)
 
-
     def finish(status):
         print 'Finishing up...'
         print unicode(status)
@@ -79,14 +80,14 @@ def xec(user_name, data, parent):
     except:
         return finish(
             dict(state='error',
-            message='Cannot clone the actions module'))
+                 message='Cannot clone the actions module'))
 
     try:
         import actions
     except Exception:
         return finish(
             dict(state='error',
-            message='Cannot import the actions module'))
+                 message='Cannot import the actions module'))
 
     if 'command' in data:
         command_name = data['command']
@@ -99,8 +100,7 @@ def xec(user_name, data, parent):
         command = None
         return finish(
             dict(state='error',
-            message='Command [%s] not found' % data['command']))
-
+                 message='Command [%s] not found' % data['command']))
 
     parent.send(dict(state='running'))
 
@@ -110,7 +110,7 @@ def xec(user_name, data, parent):
         state = 'failed'
         if len(e.args) > 1 and e.args[1] in ['failed', 'error', 'conflicted']:
             state = e.args[1]
-        return finish(dict(state=state, message=e.message ))
+        return finish(dict(state=state, message=e.message))
 
     result = dict()
     if isinstance(res, dict):
@@ -126,8 +126,8 @@ def xec(user_name, data, parent):
 def run(data):
     user_name = 'gitbot-user-' + data['project'].replace('/', '-')
     check_call(['/usr/sbin/adduser',
-                    '--disabled-password',
-                    '--gecos', '""', user_name])
+                '--disabled-password',
+                '--gecos', '""', user_name])
 
     status = None
     status_url = data.get('status_url', None)
@@ -153,7 +153,7 @@ def run(data):
                     if result['state'] == 'completed' or \
                         result['state'] == 'error' or \
                         result['state'] == 'conflicted' or \
-                        result['state'] == 'failed':
+                            result['state'] == 'failed':
                         receiver.close()
                         break
                 except:
@@ -164,6 +164,7 @@ def run(data):
 
     return status
 
+
 def post_status(status_url, status_data):
     if not status_url:
         return
@@ -172,12 +173,11 @@ def post_status(status_url, status_data):
         "Accept": "text/plain"
     }
     response = requests.post(status_url,
-                    data=json.dumps(status_data),
-                    headers=headers)
+                             data=json.dumps(status_data),
+                             headers=headers)
     if not response.status_code == 200:
         print 'Error: Posting status failed'
-        print  response.text
-
+        print response.text
 
 
 def poll():
@@ -189,8 +189,8 @@ def poll():
     aws_access_key = '{"Ref": "WorkerKeys"}'
     aws_secret_key = '{"Fn::GetAtt": ["WorkerKeys", "SecretAccessKey"]}'
     conn = sqsconnect(region,
-                aws_access_key_id=aws_access_key,
-                aws_secret_access_key=aws_secret_key)
+                      aws_access_key_id=aws_access_key,
+                      aws_secret_access_key=aws_secret_key)
     q = Queue(conn, queue_url)
     msg = q.read(600)
     if msg:
@@ -205,7 +205,7 @@ def poll():
             raise
         except Exception, e:
             if status_url:
-                post_status(status_url,  dict(
+                post_status(status_url, dict(
                     state='error',
                     message=e.message
                 ))
@@ -214,7 +214,6 @@ def poll():
             print 'All done.'
         finally:
             running.delete()
-
 
 
 def test(data_file):
