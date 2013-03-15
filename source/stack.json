@@ -163,7 +163,6 @@
                 "git" : [],
                 "libyaml-dev" : [],
                 "nodejs" : [],
-                "npm" : [],
                 "nginx-light" : [],
                 "monit" : [],
                 "python-lxml" : [],
