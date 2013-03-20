@@ -157,6 +157,7 @@
             "packages" : {
               "apt" : {
                 "default-jre-headless": [],
+                "ant-contrib": [],
                 "zip": [],
                 "unzip": [],
                 "build-essential" : [],
