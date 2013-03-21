@@ -163,6 +163,7 @@
                 "unzip": [],
                 "build-essential" : [],
                 "git" : [],
+                "subversion" : [],
                 "libyaml-dev" : [],
                 "nodejs" : [],
                 "nginx-light" : [],
