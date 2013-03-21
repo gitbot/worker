@@ -107,6 +107,8 @@ def xec(user_name, data, parent):
     try:
         res = command(data)
     except Exception, e:
+        import traceback
+        print traceback.format_exc()
         state = 'failed'
         if len(e.args) > 1 and e.args[1] in ['failed', 'error', 'conflicted']:
             state = e.args[1]
@@ -124,7 +126,11 @@ def xec(user_name, data, parent):
 
 
 def run(data):
-    user_name = 'gitbot-user-' + data['project'].replace('/', '-')
+    user_name = 'gitbot-user-{project}-{repo}'.format(
+                    project=data['project'],
+                    repo=data['repo']
+                )
+    user_name = user_name.replace('/', '-')
     check_call(['/usr/sbin/adduser',
                 '--disabled-password',
                 '--gecos', '""', user_name])
