@@ -177,6 +177,12 @@
                 "requests": "1.1.0",
                 "fswrap" : []
               }
+            },
+            "commands": {
+              "1-link-ant-contrib" : {
+                "command" : "ln -s ../../java/ant-contrib.jar",
+                "cwd" : "/usr/share/ant/lib"
+              }
             }
           },
           "Worker" : {

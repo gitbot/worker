@@ -21,7 +21,7 @@ def setup_env(user_name, data):
     os.environ['HOME'] = home.path
     os.environ['BASH_ENV'] = home.child('.profile')
     os.chdir(home.path)
-    venv = user_name.replace('gitbot-user-', 'gitbot-env-')
+    venv = user_name.replace('gu', 'ge')
     check_call(['/usr/bin/virtualenv', '--system-site-packages', venv])
 
     def activate():
@@ -126,15 +126,10 @@ def xec(user_name, data, parent):
 
 
 def run(data):
-    user_name = 'gitbot-user-{project}-{repo}'.format(
-                    project=data['project'],
-                    repo=data['repo']
-                )
-    user_name = user_name.replace('/', '-')
+    user_name = 'gu' + data['id'][:10]
     check_call(['/usr/sbin/adduser',
                 '--disabled-password',
                 '--gecos', '""', user_name])
-
     status = None
     status_url = data.get('status_url', None)
     post_status(status_url, dict(state='started'))
