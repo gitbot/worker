@@ -48,26 +48,26 @@ context:
       Arch: 64
   arch2ami:
     ap-northeast-1:
-      '32': ami-73cf4972
-      '64': ami-77cf4976
+      '32': ami-d51a9ad4
+      '64': ami-d71a9ad6
     ap-southeast-1:
-      '32': ami-7a81cc28
-      '64': ami-7881cc2a
+      '32': ami-7c86ca2e
+      '64': ami-6686ca34
     ap-southeast-2:
-      '32': ami-4ef26374
-      '64': ami-4cf26376
+      '32': ami-5438a96e
+      '64': ami-4a38a970
     eu-west-1:
-      '32': ami-d81810ac
-      '64': ami-da1810ae
+      '32': ami-1cf5ff68
+      '64': ami-1ef5ff6a
     sa-east-1:
-      '32': ami-45fb2058
-      '64': ami-47fb205a
+      '32': ami-c171aadc
+      '64': ami-c371aade
     us-east-1:
-      '32': ami-da0d9eb3
-      '64': ami-de0d9eb7
+      '32': ami-1cbb2075
+      '64': ami-1ebb2077
     us-west-1:
-      '32': ami-be1230fb
-      '64': ami-b81230fd
+      '32': ami-b4c3eef1
+      '64': ami-b0c3eef5
     us-west-2:
-      '32': ami-48d94c78
-      '64': ami-4ad94c7a
+      '32': ami-38891d08
+      '64': ami-3a891d0a

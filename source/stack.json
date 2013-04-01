@@ -165,7 +165,7 @@
                 "git" : [],
                 "subversion" : [],
                 "libyaml-dev" : [],
-                "nodejs" : [],
+                "nodejs" : ["0.10.2"],
                 "nginx-light" : [],
                 "monit" : [],
                 "python-lxml" : [],
