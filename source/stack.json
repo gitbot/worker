@@ -136,26 +136,12 @@
         "Comment" : "Install the worker stack",
         "AWS::CloudFormation::Init" : {
           "configSets" : {
-            "ALL" : ["Repos", "System", "Worker"]
-          },
-          "Repos" : {
-            "packages" : {
-              "apt" : {
-                "python-software-properties" : []
-              }
-            },
-            "commands" : {
-              "1-nodejs" : {
-                "command" : "add-apt-repository -y ppa:chris-lea/node.js"
-              },
-              "2-update" : {
-                "command" : "apt-get update"
-              }
-            }
+            "ALL" : ["System", "Repos", "NodeJS", "Worker"]
           },
           "System" : {
             "packages" : {
               "apt" : {
+                "python-software-properties" : [],
                 "default-jre-headless": [],
                 "ant": [],
                 "ant-contrib": [],
@@ -165,7 +151,6 @@
                 "git" : [],
                 "subversion" : [],
                 "libyaml-dev" : [],
-                "nodejs" : ["0.10.2"],
                 "nginx-light" : [],
                 "monit" : [],
                 "python-lxml" : [],
@@ -183,6 +168,23 @@
               "1-link-ant-contrib" : {
                 "command" : "ln -s ../../java/ant-contrib.jar",
                 "cwd" : "/usr/share/ant/lib"
+              }
+            }
+          },
+          "Repos" : {
+            "commands" : {
+              "1-nodejs" : {
+                "command" : "add-apt-repository -y ppa:chris-lea/node.js"
+              },
+              "2-update" : {
+                "command" : "apt-get update"
+              }
+            }
+          },
+          "NodeJS" : {
+            "packages" : {
+              "apt" : {
+                "nodejs" : []
               }
             }
           },
