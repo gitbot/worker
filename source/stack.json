@@ -136,7 +136,20 @@
         "Comment" : "Install the worker stack",
         "AWS::CloudFormation::Init" : {
           "configSets" : {
-            "ALL" : ["System", "Repos", "NodeJS", "Worker"]
+            "ALL" : [
+              "Update",
+              "System",
+              "NodeJSRepos",
+              "NodeJS",
+              "Worker"
+            ]
+          },
+          "Update" : {
+            "commands" : {
+              "1-update" : {
+                "command" : "apt-get update"
+              }
+            }
           },
           "System" : {
             "packages" : {
@@ -171,7 +184,7 @@
               }
             }
           },
-          "Repos" : {
+          "NodeJSRepos" : {
             "commands" : {
               "1-nodejs" : {
                 "command" : "add-apt-repository -y ppa:chris-lea/node.js"
