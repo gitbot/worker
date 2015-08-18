@@ -25,6 +25,7 @@ context:
     - cc1.4xlarge
     - cc2.8xlarge
     - cg1.4xlarge
+    - c4.large
   instance2arch:
     c1.medium:
       Arch: 64
@@ -46,6 +47,8 @@ context:
       Arch: 64
     t1.micro:
       Arch: 64
+    c4.large:
+      Arch: 64
   arch2ami:
     ap-northeast-1:
       '32': ami-d51a9ad4
@@ -64,7 +67,7 @@ context:
       '64': ami-c371aade
     us-east-1:
       '32': ami-1cbb2075
-      '64': ami-1ebb2077
+      '64': ami-b3ce7ad8
     us-west-1:
       '32': ami-b4c3eef1
       '64': ami-b0c3eef5
