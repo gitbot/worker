@@ -17,7 +17,7 @@ class HandledException(Exception):
 
 def setup_env(user_name, data):
     os.setuid(pwd.getpwnam(user_name)[2])
-    home = Folder('/home').child_folder(user_name)
+    home = Folder('/mnt').child_folder(user_name)
     os.environ['HOME'] = home.path
     os.environ['BASH_ENV'] = home.child('.profile')
     os.chdir(home.path)
@@ -129,6 +129,7 @@ def run(data):
     user_name = 'gu' + data['id'][:10]
     check_call(['/usr/sbin/adduser',
                 '--disabled-password',
+                '--home', '/mnt/' + user_name,
                 '--gecos', '""', user_name])
     status = None
     status_url = data.get('status_url', None)
