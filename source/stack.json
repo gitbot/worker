@@ -7,7 +7,7 @@
     "InstanceType" : {
       "Description" : "Worker EC2 instance type",
       "Type" : "String",
-      "Default" : "m4.large",
+      "Default" : "m2.xlarge",
       "AllowedValues" : {{ instances|json|indent(4) }},
       "ConstraintDescription" : "must be a valid EC2 instance type."
     },
