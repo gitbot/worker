@@ -163,6 +163,7 @@ def run(data):
         p.join()
     finally:
         check_call(['/usr/sbin/deluser', '--quiet', '--remove-home', user_name])
+        Folder('/mnt/' + user_name).delete()
 
     return status
 
