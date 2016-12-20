@@ -187,10 +187,7 @@
           "NodeJSRepos" : {
             "commands" : {
               "1-nodejs" : {
-                "command" : "add-apt-repository -y ppa:chris-lea/node.js"
-              },
-              "2-update" : {
-                "command" : "apt-get update"
+                "command" : "curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -"
               }
             }
           },
