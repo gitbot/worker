@@ -187,7 +187,13 @@
           "NodeJSRepos" : {
             "commands" : {
               "1-nodejs" : {
-                "command" : "curl -sL https://deb.nodesource.com/setup_6.x | bash -"
+                "command" : "curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -"
+              },
+              "2-nodejs": {
+                "command": "echo 'deb https://deb.nodesource.com/node_6.x xenial main' | tee /etc/apt/sources.list.d/nodesource.list"
+              },
+              "3-nodejs": {
+                "command": "apt-get update"
               }
             }
           },
