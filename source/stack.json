@@ -169,7 +169,8 @@
                 "python-lxml" : [],
                 "python-virtualenv" : [],
                 "python-pip" : [],
-                "python-dev" : []
+                "python-dev" : [],
+                "python-yaml": []
               },
               "python" : {
                 "boto" : "2.10.0",
