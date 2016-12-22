@@ -187,7 +187,7 @@
           "NodeJSRepos" : {
             "commands" : {
               "1-nodejs" : {
-                "command" : "curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -"
+                "command" : "curl -sL https://deb.nodesource.com/setup_6.x | bash -"
               }
             }
           },
