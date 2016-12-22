@@ -176,12 +176,6 @@
                 "requests": "1.2.3",
                 "fswrap" : "1.0.0"
               }
-            },
-            "commands": {
-              "1-link-ant-contrib" : {
-                "command" : "ln -s ../../java/ant-contrib.jar",
-                "cwd" : "/usr/share/ant/lib"
-              }
             }
           },
           "NodeJSRepos" : {
