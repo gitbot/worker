@@ -174,7 +174,8 @@
               },
               "python" : {
                 "boto" : "2.10.0",
-                "requests": "1.2.3"
+                "requests": "1.2.3",
+                "fswrap": "git://github.com/hyde/fswrap"
               }
             }
           },
