@@ -139,6 +139,7 @@
             "ALL" : [
               "Update",
               "System",
+              "PythonFsWrap",
               "NodeJSRepos",
               "NodeJS",
               "Worker"
@@ -174,8 +175,14 @@
               },
               "python" : {
                 "boto" : "2.10.0",
-                "requests": "1.2.3",
-                "fswrap": "git://github.com/hyde/fswrap"
+                "requests": "1.2.3"
+              }
+            }
+          },
+          "PythonFsWrap": {
+            "commands": {
+              "1-pyfswrap": {
+                "command": "pip install -e git://github.com/hyde/fswrap#egg=fswrap"
               }
             }
           },
