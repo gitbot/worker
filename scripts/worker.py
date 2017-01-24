@@ -22,11 +22,12 @@ def setup_env(user_name, data):
     os.environ['BASH_ENV'] = home.child('.profile')
     os.chdir(home.path)
     venv = user_name.replace('gu', 'ge')
-    check_call(['/usr/bin/virtualenv', '--system-site-packages', venv])
+    check_call(['/usr/bin/virtualenv', '--system-site-packages', '--no-setuptools', venv])
 
     def activate():
         f = home.child_folder(venv).child('bin/activate_this.py')
         execfile(f, dict(__file__=f))
+        check_call(['pip', 'install', 'setuptools==33.1.1'])
 
     activate()
 
